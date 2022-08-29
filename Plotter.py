@@ -1,5 +1,3 @@
-from pickle import HIGHEST_PROTOCOL
-from site import makepath
 import numpy as np
 import cv2
 import threading
@@ -45,13 +43,13 @@ class Plotter():
     def stop(self):
         self.running = False
 
-
     def makePlot(self):
         prev = {}
 
         self.lastPlot = self.plot.copy()
         self.plot = np.ones((self.h, self.w, 3))*0.85
 
+        # Horizontal lines
         for j in range(0, int(self.y_max*100), int(self.y_granularity*100)):
             j = j/100
             y_print = (self.h-1)-int(j / self.y_max * self.h-1)
@@ -65,6 +63,7 @@ class Plotter():
             t = self.x[i]
             t_print = int((i/len(self.x)) * self.w-1)
 
+            # vertical lines
             if round(t)%self.x_granularity == 0:
                 cv2.line(self.plot, (t_print, self.h-1), (t_print, 0), [0.5, 0.5, 0.5], 1)
                 cv2.putText(self.plot, str(round(t, 2)), (t_print, self.h-1), cv2.FONT_HERSHEY_SIMPLEX, 0.4, [0, 0, 0])
@@ -82,6 +81,7 @@ class Plotter():
 
                 prev[key] = point
 
+        # y values
         for j in range(0, int(self.y_max*100), int(self.y_granularity*100)):
             j = j/100
             y_print = (self.h-1)-int(j / self.y_max * self.h-1)
@@ -106,6 +106,7 @@ class Plotter():
         while self.running:
             self.makePlot()
             self.legend()
+
             cv2.imshow(self.name, self.plot)
             cv2.waitKey(1)
 
@@ -138,27 +139,3 @@ class Plotter():
 
     def save(self, path):
         cv2.imwrite(path, (self.lastPlot*255).astype(np.uint8))
-
-
-if __name__ == "__main__":
-    plotter = Plotter()
-    plotter.start()
-
-    prev = time.time()
-    elapsed = 0
-    t = 0
-    while True:
-        try:
-
-            plotter.push(t, random.random(), "random2", [1, 0, 0])
-            plotter.push(t, random.random(), "random", [0, 0, 1], thickness=3)
-
-            elapsed = time.time() - prev
-            prev = time.time()
-            t += elapsed
-            time.sleep(0.01)
-
-        except KeyboardInterrupt:
-            plotter.stop()
-            exit()
-
