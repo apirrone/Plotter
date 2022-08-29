@@ -22,6 +22,10 @@ while True:
 
 I often need to plot values in real time, and using matplotlib is always a pain in such case. There are very probably much better tools for this out there, but I figured I would make my own basic one for fun.
 
+## Disclamer 
+
+I made this in about 1h. There WILL be bugs and maybe performance issues. I will try to improve it over time
+
 ## TODO
 - handle negative numbers
 - background for legend
