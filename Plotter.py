@@ -52,7 +52,7 @@ class Plotter():
 
         for j in range(0, int(self.y_max*100), int(self.y_granularity*100)):
             j = j/100
-            y_print = int(j / self.y_max * self.h-1)
+            y_print = (self.h-1)-int(j / self.y_max * self.h-1)
 
             cv2.line(self.plot, (0, y_print), (self.w-1, y_print), [0.5, 0.5, 0.5], 1)
 
@@ -69,7 +69,7 @@ class Plotter():
 
             for key in self.data.keys():
                 y = self.data[key][i]
-                y_print = int((y / self.y_max) * self.h-1)
+                y_print = (self.h-1)-int((y / self.y_max) * self.h-1)
                 point = (t_print, y_print)
 
                 if i > 0:
@@ -82,9 +82,9 @@ class Plotter():
 
         for j in range(0, int(self.y_max*100), int(self.y_granularity*100)):
             j = j/100
-            y_print = int(j / self.y_max * self.h-1)
+            y_print = (self.h-1)-int(j / self.y_max * self.h-1)
 
-            cv2.putText(self.plot, str(round(round(self.y_max,1) - j, 2)), (0, y_print), cv2.FONT_HERSHEY_SIMPLEX, 0.4, [0, 0, 0])
+            cv2.putText(self.plot, str(round(j, 2)), (0, y_print), cv2.FONT_HERSHEY_SIMPLEX, 0.4, [0, 0, 0])
 
     def legend(self):
         pos = (20, 20)
