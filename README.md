@@ -24,7 +24,7 @@ I often need to plot values in real time, and using matplotlib is always a pain 
 
 ## Disclamer 
 
-I made this in about 1h. There WILL be bugs and maybe performance issues. I will try to improve it over time
+This is very `quick and dirty`. There WILL be bugs and maybe performance issues. I will try to improve it over time
 
 ## TODO
 - handle negative numbers
