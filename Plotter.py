@@ -34,6 +34,7 @@ class Plotter():
         self.y_max         = 0.01
         self.t_max         = 0.01
         self.history_size  = history_size
+        self.lastPlot      = None
 
     def start(self):
         self.running = True
@@ -48,6 +49,7 @@ class Plotter():
     def makePlot(self):
         prev = {}
 
+        self.lastPlot = self.plot.copy()
         self.plot = np.ones((self.h, self.w, 3))*0.85
 
         for j in range(0, int(self.y_max*100), int(self.y_granularity*100)):
@@ -133,6 +135,9 @@ class Plotter():
             self.x = self.x[-self.history_size:]
             for name in self.data.keys():
                 self.data[name] = self.data[name][-self.history_size:]
+
+    def save(self, path):
+        cv2.imwrite(path, (self.lastPlot*255).astype(np.uint8))
 
 
 if __name__ == "__main__":
