@@ -18,7 +18,12 @@ while True:
     plotter.push(t, value2[i], "value2", [0, 0, 1])
 ```
 
+## Why ?
+
+I often need to plot values in real time, and using matplotlib is always a pain in such case. There are very probably much better tools for this out there, but I figured I would make my own basic one for fun.
+
 ## TODO
 - handle negative numbers
 - background for legend
 - use RGB instead of BGR when function is meant to be used by user
+- cleaner code
