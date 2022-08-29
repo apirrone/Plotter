@@ -30,6 +30,7 @@ class Plotter():
         self.plot          = np.ones((self.h, self.w, 3))*0.85
         self.x_granularity = x_granularity
         self.y_granularity = y_granularity
+        self.y_min         = 10000000000
         self.y_max         = 0.01
         self.t_max         = 0.01
         self.history_size  = history_size
@@ -121,6 +122,9 @@ class Plotter():
 
         if y > self.y_max:
             self.y_max = y
+
+        if y < self.y_min:
+            self.y_min = y
 
         if t > self.t_max:
             self.t_max = t
