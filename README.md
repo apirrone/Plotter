@@ -2,7 +2,7 @@
 
 A  very simple live plotter
 
-## TODO
+## TODO
 - handle negative numbers
 - background for legend
 
