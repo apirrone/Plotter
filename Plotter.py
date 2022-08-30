@@ -68,7 +68,7 @@ class Plotter():
         self.plot = np.ones((self.h, self.w, 3))*0.85
 
         # Draw horizontal lines
-        for y in range(round(self.y_min*100), round(self.y_max*100), self.y_granularity*100):
+        for y in range(round(self.y_min*100), round(self.y_max*100), int(self.y_granularity*100)):
             y = y/100
             y_print = self.h-int(((y - self.y_min)/(self.y_max - self.y_min))*self.h)
             self.drawHorizontalLine(y_print, text=y)
@@ -85,7 +85,7 @@ class Plotter():
                 y_print = self.h-int(((y - self.y_min)/(self.y_max - self.y_min))*self.h)
                 point = (i_print, y_print)
 
-                if i > self.x_granularity:
+                if i > 0:
                     self.plot = cv2.line(self.plot, prev[key], point, self.params["color"][key], self.params["thickness"][key])
 
                 if key not in prev:
@@ -112,9 +112,19 @@ class Plotter():
         cv2.imshow(self.name, self.plot)
         cv2.waitKey(1)
 
-    def push(self, t, y, name, color=[0, 0, 0], thickness=2):
+    def pushArray(self, t, y, name, color=None, thickness=2):
+        assert len(t) == len(y)
+
+        for i in range(len(t)):
+            self.push(t[i], y[i], name, color=color, thickness=thickness)
+
+    def push(self, t, y, name, color=None, thickness=2):
         if name not in self.data:
             self.data[name] = []
+
+            if color is None:
+                color = tuple(random.random() for _ in range(3))
+
             self.params["color"][name] = color
             self.params["thickness"][name] = thickness
             
@@ -141,8 +151,8 @@ if __name__ == "__main__":
     while True:
         j = random.randint(-100, 100)
         z = random.randint(-100, 100)
-        plot.push(i, j, "test1", color=[0, 0, 1], thickness=2)
-        plot.push(i, z, "test2", color=[1, 0, 1], thickness=2)
+        plot.push(i, j, "test1", thickness=2)
+        plot.push(i, z, "test2", thickness=2)
         time.sleep(0.05)
         i += 1
 
