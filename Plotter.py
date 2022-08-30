@@ -46,7 +46,6 @@ class Plotter():
     def makePlot(self):
         prev = {}
 
-        self.lastPlot = self.plot.copy()
         self.plot = np.ones((self.h, self.w, 3))*0.85
 
         # Horizontal lines
@@ -88,6 +87,11 @@ class Plotter():
 
             cv2.putText(self.plot, str(round(j, 2)), (0, y_print), cv2.FONT_HERSHEY_SIMPLEX, 0.4, [0, 0, 0])
 
+
+        self.legend()
+
+        self.lastPlot = self.plot.copy()
+
     def legend(self):
         pos = (20, 20)
         for i, name in enumerate(self.data.keys()):
@@ -105,7 +109,6 @@ class Plotter():
     def run(self):
         while self.running:
             self.makePlot()
-            self.legend()
 
             cv2.imshow(self.name, self.plot)
             cv2.waitKey(1)
