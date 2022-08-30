@@ -1,3 +1,4 @@
+from pickle import HIGHEST_PROTOCOL
 import numpy as np
 import cv2
 import threading
@@ -16,7 +17,7 @@ backtrace.hook(
 )
 
 class Plotter():
-    def __init__(self, w=1500, h=500, name="plot", x_granularity=10, y_granularity=0.1, history_size = 1000):
+    def __init__(self, w=1500, h=500, name="plot", x_granularity=5, y_granularity=10, history_size=100):
         self.w             = w
         self.h             = h
         self.x             = []
@@ -30,9 +31,8 @@ class Plotter():
         self.y_granularity = y_granularity
         self.y_min         = 10000000000
         self.y_max         = 0.01
-        self.t_max         = 0.01
         self.history_size  = history_size
-        self.lastPlot      = None
+        self.ii            = 0
 
     def start(self):
         self.running = True
@@ -43,36 +43,49 @@ class Plotter():
     def stop(self):
         self.running = False
 
+    def run(self):        
+        while self.running:
+            self.makePlot()
+            self.show()
+            self.ii += 1
+        cv2.destroyAllWindows()
+    
+    def save(self, path):
+        cv2.imwrite(path, (self.plot*255).astype(np.uint8))
+
+    def drawVerticalLine(self, x, text=None, color=[0.7, 0.7, 0.7], thickness=2, font_size=0.45):
+        cv2.line(self.plot, (x, self.h-1), (x, 0), color, thickness)
+        if text is not None:
+            cv2.putText(self.plot, str(round(text, 2)), (x+thickness, self.h-1), cv2.FONT_HERSHEY_SIMPLEX, font_size, color)
+
+    def drawHorizontalLine(self, y, text=None, color=[0.7, 0.7, 0.7], thickness=2, font_size=0.45):
+        cv2.line(self.plot, (0, y), (self.w-1, y), color, thickness)
+        if text is not None:
+            cv2.putText(self.plot, str(round(text, 2)), (thickness, y-thickness), cv2.FONT_HERSHEY_SIMPLEX, font_size, color)
+
     def makePlot(self):
         prev = {}
-
         self.plot = np.ones((self.h, self.w, 3))*0.85
 
-        # Horizontal lines
-        for j in range(0, int(self.y_max*100), int(self.y_granularity*100)):
-            j = j/100
-            y_print = (self.h-1)-int(j / self.y_max * self.h-1)
+        # Draw horizontal lines
+        for y in range(round(self.y_min*100), round(self.y_max*100), self.y_granularity*100):
+            y = y/100
+            y_print = self.h-int(((y - self.y_min)/(self.y_max - self.y_min))*self.h)
+            self.drawHorizontalLine(y_print, text=y)
 
-            cv2.line(self.plot, (0, y_print), (self.w-1, y_print), [0.5, 0.5, 0.5], 1)
+        for i in range(len(self.x) -1):
+            i_print = int(i/len(self.x) * self.w)
 
-
-
-        # actual plotting
-        for i in range(len(self.x)-1):
-            t = self.x[i]
-            t_print = int((i/len(self.x)) * self.w-1)
-
-            # vertical lines
-            if round(t)%self.x_granularity == 0:
-                cv2.line(self.plot, (t_print, self.h-1), (t_print, 0), [0.5, 0.5, 0.5], 1)
-                cv2.putText(self.plot, str(round(t, 2)), (t_print, self.h-1), cv2.FONT_HERSHEY_SIMPLEX, 0.4, [0, 0, 0])
+            # Draw vertical lines
+            if i%self.x_granularity == 0: # TODO adjustable granularity
+                self.drawVerticalLine(i_print, text=self.x[i])
 
             for key in self.data.keys():
                 y = self.data[key][i]
-                y_print = (self.h-1)-int((y / self.y_max) * self.h-1)
-                point = (t_print, y_print)
+                y_print = self.h-int(((y - self.y_min)/(self.y_max - self.y_min))*self.h)
+                point = (i_print, y_print)
 
-                if i > 0:
+                if i > self.x_granularity:
                     self.plot = cv2.line(self.plot, prev[key], point, self.params["color"][key], self.params["thickness"][key])
 
                 if key not in prev:
@@ -80,20 +93,10 @@ class Plotter():
 
                 prev[key] = point
 
-        # y values
-        for j in range(0, int(self.y_max*100), int(self.y_granularity*100)):
-            j = j/100
-            y_print = (self.h-1)-int(j / self.y_max * self.h-1)
-
-            cv2.putText(self.plot, str(round(j, 2)), (0, y_print), cv2.FONT_HERSHEY_SIMPLEX, 0.4, [0, 0, 0])
-
-
         self.legend()
 
-        self.lastPlot = self.plot.copy()
-
     def legend(self):
-        pos = (20, 20)
+        pos = (40, 20)
         for i, name in enumerate(self.data.keys()):
             color     = self.params["color"][name]
             thickness = 2
@@ -105,15 +108,9 @@ class Plotter():
 
             cv2.putText(self.plot, name, pt3, cv2.FONT_HERSHEY_SIMPLEX, 0.5, color)
 
-
-    def run(self):
-        while self.running:
-            self.makePlot()
-
-            cv2.imshow(self.name, self.plot)
-            cv2.waitKey(1)
-
-        cv2.destroyAllWindows()
+    def show(self):
+        cv2.imshow(self.name, self.plot)
+        cv2.waitKey(1)
 
     def push(self, t, y, name, color=[0, 0, 0], thickness=2):
         if name not in self.data:
@@ -132,13 +129,20 @@ class Plotter():
         if y < self.y_min:
             self.y_min = y
 
-        if t > self.t_max:
-            self.t_max = t
-
         if len(self.x) > self.history_size:
             self.x = self.x[-self.history_size:]
             for name in self.data.keys():
                 self.data[name] = self.data[name][-self.history_size:]
 
-    def save(self, path):
-        cv2.imwrite(path, (self.lastPlot*255).astype(np.uint8))
+if __name__ == "__main__":
+    plot = Plotter()
+    plot.start()
+    i = 0
+    while True:
+        j = random.randint(-100, 100)
+        z = random.randint(-100, 100)
+        plot.push(i, j, "test1", color=[0, 0, 1], thickness=2)
+        plot.push(i, z, "test2", color=[1, 0, 1], thickness=2)
+        time.sleep(0.05)
+        i += 1
+

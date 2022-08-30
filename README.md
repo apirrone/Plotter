@@ -27,9 +27,6 @@ I often need to plot values in real time, and using matplotlib is always a pain 
 This is very `quick and dirty`. There WILL be bugs and maybe performance issues. I will try to improve it over time
 
 ## TODO
-- handle negative numbers
 - background for legend
 - use RGB instead of BGR when function is meant to be used by user
-- cleaner code
 - Not working with two instances of plotter (threading stuff)
-- proper units and scaling
