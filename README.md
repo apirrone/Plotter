@@ -30,3 +30,5 @@ This is very `quick and dirty`. There WILL be bugs and maybe performance issues.
 - background for legend
 - use RGB instead of BGR when function is meant to be used by user
 - Not working with two instances of plotter (threading stuff)
+- interactive graph (scroll in history, show values on hover)
+- ability to pause/resume view. Needs to catch up 

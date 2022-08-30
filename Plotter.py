@@ -41,16 +41,13 @@ class Plotter():
     def mouseCallback(self, event, x, y, flags, param):
         self.mouse_x = x
         self.mouse_y = y 
-        # cv2.circle(self.plot, (x, y), 10, [1, 0, 0])
-        # print(x, y)
 
     def mouse(self):
         cv2.circle(self.plot, (self.mouse_x, self.mouse_y), 5, [1, 0, 0], thickness=-1)
 
     def start(self):
-        # cv2.namedWindow(self.name)
         self.running = True
-        self.t = threading.Thread(target=self.run, name="plot_thread")
+        self.t = threading.Thread(target=self.run, name=self.name+"_thread")
         self.t.daemon = True
         self.t.start()
 
@@ -64,6 +61,7 @@ class Plotter():
 
             cv2.imshow(self.name, self.plot)
             cv2.waitKey(1)
+
             if not self.callbackSet:
                 cv2.setMouseCallback(self.name, self.mouseCallback)   
                 self.callbackSet = True
@@ -96,7 +94,7 @@ class Plotter():
             i_print = int(i/len(self.x) * self.w)
 
             # Draw vertical lines
-            if i%self.x_granularity == 0: # TODO adjustable granularity
+            if i%self.x_granularity == 0:
                 self.drawVerticalLine(i_print, text=self.x[i])
 
             for key in self.data.keys():
@@ -128,6 +126,8 @@ class Plotter():
 
             cv2.putText(self.plot, name, pt3, cv2.FONT_HERSHEY_SIMPLEX, 0.5, color)
 
+
+    # TODO interactive show, where we can hover the graphs and see the values
     # def _show(self):      
     #     while True:
     #         cv2.imshow(self.name, self.plot)
