@@ -18,23 +18,37 @@ backtrace.hook(
 
 class Plotter():
     def __init__(self, w=1500, h=500, name="plot", x_granularity=5, y_granularity=10, history_size=100):
-        self.w             = w
-        self.h             = h
-        self.x             = []
-        self.data          = {} # {"name1" : [], "name2" : []}
-        self.params        = {"color" : {}, "thickness" : {}}
-        self.running       = False
-        self.t             = None
-        self.name          = name
-        self.plot          = np.ones((self.h, self.w, 3))*0.85
-        self.x_granularity = x_granularity
-        self.y_granularity = y_granularity
-        self.y_min         = 10000000000
-        self.y_max         = 0.01
-        self.history_size  = history_size
-        self.ii            = 0
+        self.w               = w
+        self.h               = h
+        self.x               = []
+        self.data            = {} # {"name1" : [], "name2" : []}
+        self.params          = {"color" : {}, "thickness" : {}}
+        self.running         = False
+        self.t               = None
+        self.name            = name
+        self.plot            = np.ones((self.h, self.w, 3))*0.85
+        self.x_granularity   = x_granularity
+        self.y_granularity   = y_granularity
+        self.y_min           = 10000000000
+        self.y_max           = 0.01
+        self.history_size    = history_size
+
+        self.callbackSet     = False
+        self.mouse_x         = 0
+        self.mouse_y         = 0
+        self.mouse_l_clicked = False
+
+    def mouseCallback(self, event, x, y, flags, param):
+        self.mouse_x = x
+        self.mouse_y = y 
+        # cv2.circle(self.plot, (x, y), 10, [1, 0, 0])
+        # print(x, y)
+
+    def mouse(self):
+        cv2.circle(self.plot, (self.mouse_x, self.mouse_y), 5, [1, 0, 0], thickness=-1)
 
     def start(self):
+        # cv2.namedWindow(self.name)
         self.running = True
         self.t = threading.Thread(target=self.run, name="plot_thread")
         self.t.daemon = True
@@ -42,13 +56,18 @@ class Plotter():
 
     def stop(self):
         self.running = False
+        cv2.destroyAllWindows()
 
     def run(self):        
         while self.running:
             self.makePlot()
-            self.show()
-            self.ii += 1
-        cv2.destroyAllWindows()
+
+            cv2.imshow(self.name, self.plot)
+            cv2.waitKey(1)
+            if not self.callbackSet:
+                cv2.setMouseCallback(self.name, self.mouseCallback)   
+                self.callbackSet = True
+
     
     def save(self, path):
         cv2.imwrite(path, (self.plot*255).astype(np.uint8))
@@ -94,6 +113,7 @@ class Plotter():
                 prev[key] = point
 
         self.legend()
+        self.mouse()
 
     def legend(self):
         pos = (40, 20)
@@ -108,9 +128,15 @@ class Plotter():
 
             cv2.putText(self.plot, name, pt3, cv2.FONT_HERSHEY_SIMPLEX, 0.5, color)
 
-    def show(self):
-        cv2.imshow(self.name, self.plot)
-        cv2.waitKey(1)
+    # def _show(self):      
+    #     while True:
+    #         cv2.imshow(self.name, self.plot)
+    #         cv2.waitKey(1)
+
+    # def show(self):
+    #     self.ts = threading.Thread(target=self._show, name="show_thread")
+    #     self.ts.daemon = True
+    #     self.ts.start()
 
     def pushArray(self, t, y, name, color=None, thickness=2):
         assert len(t) == len(y)
@@ -153,6 +179,6 @@ if __name__ == "__main__":
         z = random.randint(-100, 100)
         plot.push(i, j, "test1", thickness=2)
         plot.push(i, z, "test2", thickness=2)
-        time.sleep(0.05)
+        time.sleep(0.01)
         i += 1
 
