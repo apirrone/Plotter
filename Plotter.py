@@ -32,6 +32,7 @@ class Plotter():
         self.y_min           = 10000000000
         self.y_max           = 0.01
         self.history_size    = history_size
+        self.lastPlot        = None
 
         self.callbackSet     = False
         self.mouse_x         = 0
@@ -68,7 +69,7 @@ class Plotter():
 
     
     def save(self, path):
-        cv2.imwrite(path, (self.plot*255).astype(np.uint8))
+        cv2.imwrite(path, (self.lastPlot*255).astype(np.uint8))
 
     def drawVerticalLine(self, x, text=None, color=[0.7, 0.7, 0.7], thickness=2, font_size=0.45):
         cv2.line(self.plot, (x, self.h-1), (x, 0), color, thickness)
@@ -112,6 +113,8 @@ class Plotter():
 
         self.legend()
         self.mouse()
+
+        self.lastPlot = self.plot.copy()
 
     def legend(self):
         pos = (40, 20)
